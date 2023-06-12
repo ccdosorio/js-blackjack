@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Blackjack</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.min.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body>
+    <h1>Blackjack</h1>
+
+    <!-- Buttons -->
+    <div class="button-container">
+        <button id="btnNewGame" class="button">Nuevo juego</button>
+        <button id="btnRequest" class="button">Pedir carta</button>
+        <button id="btnStop" class="button">Detener</button>
+    </div>
+    <!-- /Buttons -->
+
+    <!-- Player -->
+    <div class="container">
+        <h2>Jugador - <small>0</small></h2>
+        <div id="player-hand" class="player-hand">
+        </div>
+    </div>
+    <!-- /Player -->
+
+    <!-- Machine -->
+    <div class="container">
+        <h2>Computadora - <small>0</small></h2>
+        <div id="machine-hand" class="player-hand">
+        </div>
+    </div>
+    <!-- Machine -->
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.all.min.js"></script>
+    <script src="assets/js/underscore-min.js"></script>
+    <script src="assets/js/game.js"></script>
+</body>
+
+</html>

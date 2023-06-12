@@ -4,4 +4,4 @@
 
 - Clonar el proyecto
 - Abrir el index.html en el navegador
-- A jugar! `&#x1F600;`
+- A jugar! 😃🎉

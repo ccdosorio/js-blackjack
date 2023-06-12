@@ -65,3 +65,9 @@ h2 {
 .button:hover {
     background-color: #2980b9;
 }
+
+.disabled-button {
+    opacity: 0.5;
+    pointer-events: none;
+    cursor: not-allowed;
+}

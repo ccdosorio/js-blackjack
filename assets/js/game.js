@@ -1,160 +1,158 @@
-/**
- * 2C = Two of Clubs
- * 2D = Two of Diamonds
- * 2H = Two of Hearts
- * 2S = Two of Spades
- */
+const myModule = (() => {
+    'use strict';
 
-// Baraja
-let deck = [];
-const cardTypes = ['C', 'D', 'H', 'S'];
-const specialCards = ['A', 'J', 'Q', 'K'];
+    // Baraja
+    let deck = [];
+    const cardTypes = ['C', 'D', 'H', 'S'],
+        specialCards = ['A', 'J', 'Q', 'K'];
 
-let playerPoints = 0;
-let machinePoints = 0;
+    let playerPoints = [];
 
+    // Referencias HTML
+    const btnRequest = document.querySelector('#btnRequest'),
+        btnNewGame = document.querySelector('#btnNewGame'),
+        btnStop = document.querySelector('#btnStop');
 
-// Referencias HTML
-const btnRequest = document.querySelector('#btnRequest');
-const btnNewGame = document.querySelector('#btnNewGame');
-const btnStop = document.querySelector('#btnStop');
-const htmlPoints = document.querySelectorAll('small');
-const playerHand = document.getElementById('player-hand');
-const machineHand = document.getElementById('machine-hand');
+    const htmlPoints = document.querySelectorAll('small'),
+        divPlayersHand = document.querySelectorAll('.player-hand');
 
-// Crear una nueva baraja
-const createDeck = () => {
-    // 2 numero menor de cartas y 10 el mayor
-    for (let i = 2; i <= 10; i++) {
+    const initGame = (numPlayers = 2) => {
+        deck = createDeck();
+        playerPoints = [];
+        for (let i = 0; i < numPlayers; i++) {
+            playerPoints.push(0);
+        }
+
+        htmlPoints.forEach(element => element.innerText = 0);
+        divPlayersHand.forEach(element => element.innerHTML = '');
+
+        btnRequest.classList.remove('disabled-button');
+        btnStop.classList.remove('disabled-button');
+    }
+
+    // Crear una nueva baraja
+    const createDeck = () => {
+
+        deck = [];
+
+        // 2 numero menor de cartas y 10 el mayor
+        for (let i = 2; i <= 10; i++) {
+            for (const type of cardTypes) {
+                deck.push(i + type);
+            }
+        }
+
         for (const type of cardTypes) {
-            deck.push(i + type);
+            for (const special of specialCards) {
+                deck.push(special + type);
+            }
         }
+
+        // Orden aleatorio del deck
+        return _.shuffle(deck);
     }
 
-    for (const type of cardTypes) {
-        for (const special of specialCards) {
-            deck.push(special + type);
+    // Funcion para tomar una carta
+
+    const requestCard = () => {
+
+        if (deck.length === 0) {
+            throw 'No hay cartas en el deck';
         }
+        return deck.pop();
     }
 
-    // Orden aleatorio del deck
-    deck = _.shuffle(deck);
-    console.log(deck);
+    const cardValue = (card) => {
+        const value = card.substring(0, card.length - 1);
 
-    return deck;
-}
-
-createDeck();
-
-// Funcion para tomar una carta
-
-const requestCard = () => {
-
-    if (deck.length === 0) {
-        throw 'No hay cartas en el deck';
+        // Is not a number
+        return (isNaN(value)) ?
+            (value === 'A') ? 11 : 10
+            : Number(value);
     }
 
-    return deck.pop();
-}
+    // Turno: 0 = primer jugador y el ultimo sera la computadora
+    const accumulatePoints = (card, turn) => {
+        playerPoints[turn] = playerPoints[turn] + cardValue(card);
+        htmlPoints[turn].innerHTML = playerPoints[turn];
+        return playerPoints[turn];
+    }
 
-const cardValue = (card) => {
-    const value = card.substring(0, card.length - 1);
-    // Is not a number
+    const createCard = (card, turn) => {
+        const imgCard = document.createElement('img');
+        imgCard.classList.add('card');
+        imgCard.src = `assets/cards/${card}.png`;
+        divPlayersHand[turn].append(imgCard);
+    }
 
-    return (isNaN(value)) ?
-        (value === 'A') ? 11 : 10
-        : Number(value);
-}
+    const determinateWinner = () => {
 
-const generateImg = (classImg, elementHtml, card) => {
-    const imgCard = document.createElement('img');
-    imgCard.classList.add(classImg);
-    imgCard.src = `assets/cards/${card}.png`;
-    elementHtml.append(imgCard);
-}
+        const [minimumPoints, machinePoints] = playerPoints;
 
-/**
- * DOM:
- * querySelector -> retorna el primer elemento que cumple la condicion
- * querySelectorAll -> retorna un arreglo con los elementoss
- */
+        setTimeout(() => {
+            if (machinePoints === minimumPoints) {
+                Swal.fire('Nadie gana :(');
+            } else if (minimumPoints > 21) {
+                Swal.fire('Computadora gana!');
+            } else if (machinePoints > 21) {
+                Swal.fire('Jugador gana!');
+            } else {
+                Swal.fire('Computadora gana!');
+            }
+        }, 100);
+    }
 
-// Turno computadora
 
-const machineTurn = (minimumPoints) => {
+    // Turno computadora
+    const machineTurn = (minimumPoints) => {
+        let machinePoints = 0;
+        do {
+            const card = requestCard();
 
-    do {
+            machinePoints = accumulatePoints(card, playerPoints.length - 1);
+            createCard(card, playerPoints.length - 1);
+
+        } while ((machinePoints < minimumPoints) && (minimumPoints <= 21));
+
+        determinateWinner();
+    }
+
+
+    // Eventos
+
+    btnRequest.addEventListener('click', () => {
+
         const card = requestCard();
-        machinePoints = machinePoints + cardValue(card);
-        htmlPoints[1].innerHTML = machinePoints;
+        const points = accumulatePoints(card, 0);
 
-        generateImg('card', machineHand, card);
+        createCard(card, 0);
 
-        if (minimumPoints > 21) {
-            break;
+        if (points > 21) {
+            console.warn('Lo siento mucho, perdiste!');
+            btnRequest.classList.add('disabled-button');
+            btnStop.classList.add('disabled-button');
+            machineTurn(points);
+        } else if (points === 21) {
+            console.warn('21, Genial!');
+            btnRequest.classList.add('disabled-button');
+            btnStop.classList.add('disabled-button');
+            machineTurn(points);
         }
+    });
 
-    } while ((machinePoints < minimumPoints) && (minimumPoints <= 21));
+    btnStop.addEventListener('click', () => {
+        btnRequest.classList.add('disabled-button');
+        btnStop.classList.add('disabled-button');
 
-    setTimeout(() => {
-        if (machinePoints === minimumPoints) {
-            Swal.fire('Nadie gana :(');
-        } else if (minimumPoints > 21) {
-            Swal.fire('Computadora gana!');
-        } else if (machinePoints > 21) {
-            Swal.fire('Jugador gana!');
-        } else {
-            Swal.fire('Computadora gana!');
-        }
-    }, 100);
-}
+        machineTurn(playerPoints[0]);
+    });
 
+    btnNewGame.addEventListener('click', () => {
+        initGame();
+    });
 
-// Eventos
-
-btnRequest.addEventListener('click', () => {
-    const card = requestCard();
-    playerPoints = playerPoints + cardValue(card);
-    htmlPoints[0].innerHTML = playerPoints;
-
-    generateImg('card', playerHand, card);
-
-    if (playerPoints > 21) {
-        console.warn('Lo siento mucho, perdiste!');
-        btnRequest.disabled = true;
-        btnStop.disabled = true;
-        machineTurn(playerPoints);
-    } else if (playerPoints === 21) {
-        console.log('21, Genial!');
-        btnRequest.disabled = true;
-        btnStop.disabled = true;
-        machineTurn(playerPoints);
-    }
-});
-
-btnStop.addEventListener('click', () => {
-    btnRequest.disabled = true;
-    btnStop.disabled = true;
-
-    machineTurn(playerPoints);
-});
-
-btnNewGame.addEventListener('click', () => {
-
-    console.clear();
-    deck = [];
-    deck = createDeck();
-
-    playerPoints = 0;
-    machinePoints = 0;
-
-    htmlPoints[0].innerText = 0;
-    htmlPoints[1].innerText = 0;
-
-    playerHand.innerHTML = '';
-    machineHand.innerHTML = '';
-
-    btnRequest.disabled = false;
-    btnStop.disabled = false;
-
-});
+    // Todo lo que se retorne, sera publico
+    return {
+        newGame: initGame
+    };
+})();
